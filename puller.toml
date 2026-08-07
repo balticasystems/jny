@@ -1,0 +1,5 @@
+[dependencies]
+repos = [
+    ["Emilia-Systems", "csr.h"],
+    ["Emilia-Systems", "extensions.h"]
+]
