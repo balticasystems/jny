@@ -61,7 +61,7 @@
 #define noinline        __attribute__((noinline))
 
 // Forces inlining regardless of optimization level (does not touch the `inline` keyword)
-#define force_inline    __attribute__((always_inline)) inline
+#define force_inline    static __attribute__((always_inline)) inline
 
 // Generates trap-correct prologue/epilogue for the given privilege mode
 // (machine, supervisor, or rnmi); returns via mret/sret as appropriate

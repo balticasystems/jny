@@ -1,5 +1,6 @@
 [dependencies]
 repos = [
     ["Emilia-Systems", "csr.h"],
-    ["Emilia-Systems", "extensions.h"]
+    ["Emilia-Systems", "extensions.h"],
+    ["Emilia-Systems", "qemu_io.h"]
 ]
