@@ -21,4 +21,5 @@ force_inline void puts(const char* s)
     {
         put(s[i]);
     }
+    put('\n');
 }
