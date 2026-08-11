@@ -1,5 +1,6 @@
 .section .text.init
 .global _start
+.global trap_handler
 _start:
     csrr t0, mhartid    # get the mhartid
     bnez t0, park_hart  # if it is not 0 disable
@@ -11,3 +12,4 @@ park_hart:
 trap_handler:
     wfi                 # wait until the next interrupt
     j trap_handler      # stay parked (this time for the trap handler)
+    
