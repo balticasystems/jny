@@ -2,6 +2,7 @@
 
 #include "../include/csr.h"
 #include "../include/qemu_io.h"
+#include "../include/extensions.h"
 
 // Data section addresses
 extern uintptr_t _data_start;
@@ -9,6 +10,8 @@ extern uintptr_t _data_end;
 // BSS section addresses
 extern uintptr_t _bss_start;
 extern uintptr_t _bss_end;
+// Trap stack top address
+extern uintptr_t _trap_stack_top;
 // Trap handler address
 extern uintptr_t trap_handler;
 
@@ -50,9 +53,65 @@ void jny_data_init()
     /* Skip; Not needed yet */
 }
 
+void jny_mscratch_init()
+{
+    CSRW(MSCRATCH, &_trap_stack_top);
+}
+
 void jny_mtvec_init()
 {
     CSRW(MTVEC, &trap_handler);
+}
+
+typedef struct {
+    uint64_t x1;
+    uint64_t x3;
+    uint64_t x4;
+    uint64_t x5;
+    uint64_t x6;
+    uint64_t x7;
+    uint64_t x8;
+    uint64_t x9;
+    uint64_t x10;
+    uint64_t x11;
+    uint64_t x12;
+    uint64_t x13;
+    uint64_t x14;
+    uint64_t x15;
+    uint64_t x16;
+    uint64_t x17;
+    uint64_t x18;
+    uint64_t x19;
+    uint64_t x20;
+    uint64_t x21;
+    uint64_t x22;
+    uint64_t x23;
+    uint64_t x24;
+    uint64_t x25;
+    uint64_t x26;
+    uint64_t x27;
+    uint64_t x28;
+    uint64_t x29;
+    uint64_t x30;
+    uint64_t x31;
+    uint64_t mcause;
+    uint64_t mepc;
+} frame_t;
+
+#define CAUSE_BIT (1ULL << 63)
+
+void jny_dispatcher(frame_t* frame)
+{
+    switch (frame->mcause & CAUSE_BIT)
+    {
+    case 0:                 // Exception path
+        break;
+    case 1:                 // Interrupt path
+        break;
+    default:
+        unreachable();
+        break;
+    }
 }
 
 void jny_main()
@@ -65,6 +124,9 @@ void jny_main()
 
     // Moving data from ROM to RAM
     jny_data_init();
+
+    // Set the trap stack top
+    jny_mscratch_init();
 
     // Set the trap handler address
     jny_mtvec_init();

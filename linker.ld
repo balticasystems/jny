@@ -70,7 +70,11 @@ SECTIONS
     /* _end marks the first free address after everything statically linked */
     _end = .;
 
+    /* Provide the _trap_stack_top symbol */
+    /* The trap stack starts from highest address, that is equal to the RAM origin plus the size of the RAM itself */ 
+    PROVIDE(_trap_stack_top = ORIGIN(RAM) + LENGTH(RAM));
+
     /* Provide the _stack_top symbol */
-    /* The stack starts from highest address, that is equal to the RAM origin plus the size of the RAM itself */ 
-    PROVIDE(_stack_top = ORIGIN(RAM) + LENGTH(RAM));
+    /* The stack starts from highest address, that is equal to the trap stack top minus the size of the trap stack */
+    PROVIDE(_stack_top = _trap_stack_top - 8K);
 }
