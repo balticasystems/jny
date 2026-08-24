@@ -1,3 +1,5 @@
+#define DEBUG
+
 #include <stdint.h>
 
 #include "../include/csr.h"
@@ -17,9 +19,11 @@ extern uintptr_t trap_handler;
 
 void jny_panic(const char* msg, uint64_t mepc, uint64_t mcause, uint64_t code)
 {
+    uart_write_string("---- PANIC ----");
     uart_write_string("bootloader panic: "); uart_write_string(msg); uart_write_string("\n");
     uart_write_string("mepc= "); uart_write_hex(mepc); uart_write_string("\t");
     uart_write_string("mcause= "); uart_write_hex(mcause); uart_write_string("\n");
+    uart_write_string("---------------");
 
     // Exit non-zero from qemu
     SIFIVE_TEST_FAIL(code); 
@@ -27,6 +31,7 @@ void jny_panic(const char* msg, uint64_t mepc, uint64_t mcause, uint64_t code)
 
 void jny_logo()
 {
+    uart_write_string("\n");
     uart_write_string(" __\n");
     uart_write_string("/\\_\\    ___   __  __\n");
     uart_write_string("\\/\\ \\ /' _ `\\/\\ \\/\\ \\\n");
@@ -42,6 +47,7 @@ void jny_logo()
     uart_write_string("                 \\ \\ \\L\\ \\/\\ \\L\\ \\/\\ \\L\\ \\ \\ \\_ \\_\\ \\_/\\ \\L\\ \\/\\ \\L\\.\\_/\\ \\L\\ \\/\\  __/\\ \\ \\/\n");
     uart_write_string("                  \\ \\_,__/\\ \\____/\\ \\____/\\ \\__\\/\\____\\ \\____/\\ \\__/.\\_\\ \\___,_\\ \\____\\\\ \\_\\\n");
     uart_write_string("                   \\/___/  \\/___/  \\/___/  \\/__/\\/____/\\/___/  \\/__/\\/_/\\/__,_ /\\/____/ \\/_/\n");
+    uart_write_string("\n");
 }
 
 void jny_bss_init()
@@ -62,11 +68,23 @@ void jny_data_init()
 void jny_mscratch_init()
 {
     CSRW(MSCRATCH, &_trap_stack_top);
+
+#ifdef DEBUG
+    uint64_t check; CSRR(check, MSCRATCH);
+    uart_write_string("[jny_mscratch_init] mscratch="); uart_write_hex(check); uart_write_string("\n");
+#endif
+
 }
 
 void jny_mtvec_init()
 {
     CSRW(MTVEC, &trap_handler);
+
+#ifdef DEBUG
+    uint64_t check; CSRR(check, MTVEC);
+    uart_write_string("[jny_mtvec_init] mtvec="); uart_write_hex(check); uart_write_string("\n");
+#endif
+
 }
 
 typedef struct {
@@ -127,10 +145,8 @@ void jny_dispatcher(frame_t* frame)
         case 8: jny_panic("ecall from u-mode (unexpected - no priv drop yet)", frame->mepc, frame->mcause, code); break;
         case 9: jny_panic("ecall from s-mode (unexpected - no priv drop yet)", frame->mepc, frame->mcause, code); break;
         case 11:            // ecall from M-mode - your deliberate test trap
-            uart_write_string("ecall from m-mode, mepc= ");
-            uart_write_hex(frame->mepc);
-            uart_write_string("\n");
-            frame->mepc += 4;   // must advance, or you re-trap on the same ecall forever
+            uart_write_string("[jny_dispatcher] ecall from m-mode, mepc="); uart_write_hex(frame->mepc); uart_write_string("\n");
+            CSRW(MEPC, frame->mepc + 4); // must advance, or you re-trap on the same ecall forever   
             break;
         case 12: jny_panic("instruction page fault (unexpected - no paging yet)", frame->mepc, frame->mcause, code); break;
         case 13: jny_panic("load page fault (unexpected - no paging yet)", frame->mepc, frame->mcause, code); break;
@@ -147,10 +163,11 @@ void jny_dispatcher(frame_t* frame)
         default: jny_panic("unhandled interrupt code", frame->mepc, frame->mcause, 255); break;
         }
         break;
-
     default: jny_panic("unreachable mcause category", frame->mepc, frame->mcause, 255); break;
     }
 }
+
+#define DISPATCHER_TEST
 
 void jny_main()
 {
@@ -171,7 +188,7 @@ void jny_main()
 
 #ifdef DISPATCHER_TEST
     asm volatile("ecall");
-    uart_write_string("dispatcher test passed\n");
+    uart_write_string("[jny_main] dispatcher test passed\n");
 #endif
 
     // Success

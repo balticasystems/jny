@@ -1,14 +1,18 @@
 .section .text.init
 .global _start
 .global trap_handler
+
 _start:
     csrr t0, mhartid        # get the mhartid
     bnez t0, park_hart      # if it is not 0 disable
     la sp, _stack_top       # initialize the stack stack
     call jny_main           # jump into C part of the bootloader
+
 park_hart:
     wfi                     # wait until the next interrupt
     j park_hart             # stay parked
+
+.align 4
 trap_handler:
     csrrw sp, mscratch, sp  # swap to trap stack
     addi sp, sp, -256       # reserve stack for 32 registers (30 because x0(ra) and x2(sp) are not counted but we need to be aligned to 16 bytes)
@@ -50,5 +54,38 @@ trap_handler:
     sd t0, 248(sp)
     mv a0, sp               # writing the stack pointer in a0 because is the register for the function arguments
     call jny_dispatcher   
-    j trap_handler          # stay parked (this time for the trap handler)
+    # trap handled restore
+    ld x1, 0(sp)
+    ld x3, 8(sp)
+    ld x4, 16(sp)
+    ld x5, 24(sp)
+    ld x6, 32(sp)
+    ld x7, 40(sp)
+    ld x8, 48(sp)
+    ld x9, 56(sp)
+    ld x10, 64(sp)
+    ld x11, 72(sp)
+    ld x12, 80(sp)
+    ld x13, 88(sp)
+    ld x14, 96(sp)
+    ld x15, 104(sp)
+    ld x16, 112(sp)
+    ld x17, 120(sp)
+    ld x18, 128(sp)
+    ld x19, 136(sp)
+    ld x20, 144(sp)
+    ld x21, 152(sp)
+    ld x22, 160(sp)
+    ld x23, 168(sp)
+    ld x24, 176(sp)
+    ld x25, 184(sp)
+    ld x26, 192(sp)
+    ld x27, 200(sp)
+    ld x28, 208(sp)
+    ld x29, 216(sp)
+    ld x30, 224(sp)
+    ld x31, 232(sp)
+    addi sp, sp, 256        # pop the frame
+    csrrw sp, mscratch, sp  # swap back: sp <- original stack, mscratch <- trap stack top
+    mret
     
