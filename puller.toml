@@ -1,8 +1,8 @@
 [dependencies]
 repos = [
-    ["Emilia-Systems", "csr.h"],
-    ["Emilia-Systems", "extensions.h"],
-    ["Emilia-Systems", "qemu_io.h"],
-    ["Emilia-Systems", "Makefile"],
-    ["Emilia-Systems", "linker.ld"],
+    ["Scala-Systems", "csr.h"],
+    ["Scala-Systems", "extensions.h"],
+    ["Scala-Systems", "qemu_dev.h"],
+    ["Scala-Systems", "Makefile"],
+    ["Scala-Systems", "linker.ld"],
 ]

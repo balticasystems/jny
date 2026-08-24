@@ -1,7 +1,8 @@
 #include <stdint.h>
 
 #include "../include/csr.h"
-#include "../include/qemu_io.h"
+#include "../include/optional.h"
+#include "../include/qemu_dev.h"
 #include "../include/extensions.h"
 
 // Data section addresses
@@ -18,6 +19,11 @@ extern uintptr_t trap_handler;
 // Poweroff (test only)
 volatile uint32_t* power_switch = (volatile uint32_t*)0x100000;
 static uint32_t poweroff = 0x5555;
+
+void jny_panic(const char* msg, uint64_t mepc, uint64_t mcause)
+{
+
+}
 
 void jny_logo()
 {
@@ -98,19 +104,45 @@ typedef struct {
     uint64_t mepc;
 } frame_t;
 
-#define CAUSE_BIT (1ULL << 63)
+#define CAUSE_BIT   (1ULL << 63)
+#define CAUSE_MASK  ((1ULL << 63)-1)
 
 void jny_dispatcher(frame_t* frame)
 {
+    uint64_t code = frame->mcause & CAUSE_MASK;
+
     switch (frame->mcause & CAUSE_BIT)
     {
     case 0:                 // Exception path
+        switch (code)
+        {
+        case 0: break;
+        case 1: break;
+        case 2: break;
+        case 3: break;
+        case 4: break;
+        case 5: break;
+        case 6: break;
+        case 7: break;
+        case 8: break;
+        case 9: break;
+        case 11: break;
+        case 12: break;
+        case 13: break;
+        case 15: break;
+        default: unreachable(); break;
+        }
         break;
     case 1:                 // Interrupt path
+        switch (code)
+        {
+        case 3: break;      // Machine software interrupt (from msip)
+        case 7: break;      // Machine timer interrupt
+        case 11: break;     // Machine external interrupt (plic)
+        default: unreachable(); break;
+        }
         break;
-    default:
-        unreachable();
-        break;
+    default: unreachable(); break;
     }
 }
 

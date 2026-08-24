@@ -9,7 +9,7 @@
 
 #define UART0(S)    puts(S)
 
-force_inline void put(char c)
+force_inline void putchar(char c)
 {
     while (!(UART_LSR & LSR_THRE)) { /* spin */ }
     UART_THR = c;
@@ -19,7 +19,7 @@ force_inline void puts(const char* s)
 {
     for (int i = 0; s[i] != '\0'; i++)
     {
-        put(s[i]);
+        putchar(s[i]);
     }
-    put('\n');
+    putchar('\n');
 }
