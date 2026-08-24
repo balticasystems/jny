@@ -1,7 +1,6 @@
 #include <stdint.h>
 
 #include "../include/csr.h"
-#include "../include/optional.h"
 #include "../include/qemu_dev.h"
 #include "../include/extensions.h"
 
@@ -16,32 +15,33 @@ extern uintptr_t _trap_stack_top;
 // Trap handler address
 extern uintptr_t trap_handler;
 
-// Poweroff (test only)
-volatile uint32_t* power_switch = (volatile uint32_t*)0x100000;
-static uint32_t poweroff = 0x5555;
-
-void jny_panic(const char* msg, uint64_t mepc, uint64_t mcause)
+void jny_panic(const char* msg, uint64_t mepc, uint64_t mcause, uint64_t code)
 {
+    uart_write_string("bootloader panic: "); uart_write_string(msg); uart_write_string("\n");
+    uart_write_string("mepc= "); uart_write_hex(mepc); uart_write_string("\t");
+    uart_write_string("mcause= "); uart_write_hex(mcause); uart_write_string("\n");
 
+    // Exit non-zero from qemu
+    SIFIVE_TEST_FAIL(code); 
 }
 
 void jny_logo()
 {
-    UART0(" __");
-    UART0("/\\_\\    ___   __  __");
-    UART0("\\/\\ \\ /' _ `\\/\\ \\/\\ \\");
-    UART0(" \\ \\ \\/\\ \\/\\ \\ \\ \\_\\ \\");
-    UART0(" _\\ \\ \\ \\_\\ \\_\\/`____ \\");
-    UART0("/\\ \\_\\ \\/_/\\/_/`/___/> \\");
-    UART0("\\ \\____/          /\\___/");
-    UART0(" \\/___/           \\/__/");
-    UART0("                __                      __    ___                        __");
-    UART0("               /\\ \\                    /\\ \\__/\\_ \\                      /\\ \\");
-    UART0("               \\ \\ \\____    ___     ___\\ \\ ,_\\//\\ \\     ___      __     \\_\\ \\     __   _ __");
-    UART0("                \\ \\ '__`\\  / __`\\  / __`\\ \\ \\/ \\ \\ \\   / __`\\  /'__`\\   /'_` \\  /'__`\\/\\`'__\\");
-    UART0("                 \\ \\ \\L\\ \\/\\ \\L\\ \\/\\ \\L\\ \\ \\ \\_ \\_\\ \\_/\\ \\L\\ \\/\\ \\L\\.\\_/\\ \\L\\ \\/\\  __/\\ \\ \\/");
-    UART0("                  \\ \\_,__/\\ \\____/\\ \\____/\\ \\__\\/\\____\\ \\____/\\ \\__/.\\_\\ \\___,_\\ \\____\\\\ \\_\\");
-    UART0("                   \\/___/  \\/___/  \\/___/  \\/__/\\/____/\\/___/  \\/__/\\/_/\\/__,_ /\\/____/ \\/_/");
+    uart_write_string(" __\n");
+    uart_write_string("/\\_\\    ___   __  __\n");
+    uart_write_string("\\/\\ \\ /' _ `\\/\\ \\/\\ \\\n");
+    uart_write_string(" \\ \\ \\/\\ \\/\\ \\ \\ \\_\\ \\\n");
+    uart_write_string(" _\\ \\ \\ \\_\\ \\_\\/`____ \\\n");
+    uart_write_string("/\\ \\_\\ \\/_/\\/_/`/___/> \\\n");
+    uart_write_string("\\ \\____/          /\\___/\n");
+    uart_write_string(" \\/___/           \\/__/\n");
+    uart_write_string("                __                      __    ___                        __\n");
+    uart_write_string("               /\\ \\                    /\\ \\__/\\_ \\                      /\\ \\\n");
+    uart_write_string("               \\ \\ \\____    ___     ___\\ \\ ,_\\//\\ \\     ___      __     \\_\\ \\     __   _ __\n");
+    uart_write_string("                \\ \\ '__`\\  / __`\\  / __`\\ \\ \\/ \\ \\ \\   / __`\\  /'__`\\   /'_` \\  /'__`\\/\\`'__\\\n");
+    uart_write_string("                 \\ \\ \\L\\ \\/\\ \\L\\ \\/\\ \\L\\ \\ \\ \\_ \\_\\ \\_/\\ \\L\\ \\/\\ \\L\\.\\_/\\ \\L\\ \\/\\  __/\\ \\ \\/\n");
+    uart_write_string("                  \\ \\_,__/\\ \\____/\\ \\____/\\ \\__\\/\\____\\ \\____/\\ \\__/.\\_\\ \\___,_\\ \\____\\\\ \\_\\\n");
+    uart_write_string("                   \\/___/  \\/___/  \\/___/  \\/__/\\/____/\\/___/  \\/__/\\/_/\\/__,_ /\\/____/ \\/_/\n");
 }
 
 void jny_bss_init()
@@ -116,33 +116,39 @@ void jny_dispatcher(frame_t* frame)
     case 0:                 // Exception path
         switch (code)
         {
-        case 0: break;
-        case 1: break;
-        case 2: break;
-        case 3: break;
-        case 4: break;
-        case 5: break;
-        case 6: break;
-        case 7: break;
-        case 8: break;
-        case 9: break;
-        case 11: break;
-        case 12: break;
-        case 13: break;
-        case 15: break;
-        default: unreachable(); break;
+        case 0: jny_panic("instruction address misaligned", frame->mepc, frame->mcause, code); break;
+        case 1: jny_panic("instruction access fault", frame->mepc, frame->mcause, code); break;
+        case 2: jny_panic("illegal instruction", frame->mepc, frame->mcause, code); break;
+        case 3: jny_panic("breakpoint (unexpected)", frame->mepc, frame->mcause, code); break;
+        case 4: jny_panic("load address misaligned", frame->mepc, frame->mcause, code); break;
+        case 5: jny_panic("load access fault", frame->mepc, frame->mcause, code); break;
+        case 6: jny_panic("store/amo address misaligned", frame->mepc, frame->mcause, code); break;
+        case 7: jny_panic("store/amo access fault", frame->mepc, frame->mcause, code); break;
+        case 8: jny_panic("ecall from u-mode (unexpected - no priv drop yet)", frame->mepc, frame->mcause, code); break;
+        case 9: jny_panic("ecall from s-mode (unexpected - no priv drop yet)", frame->mepc, frame->mcause, code); break;
+        case 11:            // ecall from M-mode - your deliberate test trap
+            uart_write_string("ecall from m-mode, mepc= ");
+            uart_write_hex(frame->mepc);
+            uart_write_string("\n");
+            frame->mepc += 4;   // must advance, or you re-trap on the same ecall forever
+            break;
+        case 12: jny_panic("instruction page fault (unexpected - no paging yet)", frame->mepc, frame->mcause, code); break;
+        case 13: jny_panic("load page fault (unexpected - no paging yet)", frame->mepc, frame->mcause, code); break;
+        case 15: jny_panic("store/amo page fault (unexpected - no paging yet)", frame->mepc, frame->mcause, code); break;
+        default: jny_panic("unhandled exception code", frame->mepc, frame->mcause, 255); break;
         }
         break;
-    case 1:                 // Interrupt path
+    case CAUSE_BIT:         // Interrupt path
         switch (code)
         {
-        case 3: break;      // Machine software interrupt (from msip)
-        case 7: break;      // Machine timer interrupt
-        case 11: break;     // Machine external interrupt (plic)
-        default: unreachable(); break;
+        case 3:  jny_panic("machine software interrupt (unexpected - MIE off)", frame->mepc, frame->mcause, code); break;
+        case 7:  jny_panic("machine timer interrupt (unexpected - MIE off)", frame->mepc, frame->mcause, code); break;
+        case 11: jny_panic("machine external interrupt (unexpected - MIE off)", frame->mepc, frame->mcause, code); break;
+        default: jny_panic("unhandled interrupt code", frame->mepc, frame->mcause, 255); break;
         }
         break;
-    default: unreachable(); break;
+
+    default: jny_panic("unreachable mcause category", frame->mepc, frame->mcause, 255); break;
     }
 }
 
@@ -163,8 +169,13 @@ void jny_main()
     // Set the trap handler address
     jny_mtvec_init();
 
+#ifdef DISPATCHER_TEST
+    asm volatile("ecall");
+    uart_write_string("dispatcher test passed\n");
+#endif
+
     // Success
 
-    // Poweroff (test only)
-    *power_switch = poweroff;
+    // TEST PASSED (EXIT)
+    SIFIVE_TEST_PASS();
 }
