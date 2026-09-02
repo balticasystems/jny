@@ -1,7 +1,5 @@
 #pragma once
 
-#include <stdint.h>
-
 #define MHARTID  "mhartid"   // hart's unique ID, read-only, set by hardware
 #define MTVEC    "mtvec"     // trap handler entry address + mode (direct/vectored)
 #define MSTATUS  "mstatus"   // global interrupt enable + privilege mode tracking

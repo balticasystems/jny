@@ -1,15 +1,16 @@
 /* Linker script */
+INCLUDE memmap.ld
 
 OUTPUT_ARCH(riscv) /* tells the linker which instruction set architecture the output file is for */ 
-ENTRY(_start) /* sets the entry point of the program */
+ENTRY(_bstart) /* sets the entry point of the program */
 
 /* Declaring the physical memory regions available to the linker */
 MEMORY
 {
-    RAM (rwx) : ORIGIN = 0x80000000, LENGTH = 128M
+    RAM (rwx) : ORIGIN = BOOT_ORIGIN, LENGTH = BOOT_LENGTH
     /* RAM with read, write and execute */
-    /* Origin starts at 0x80000000 (QEMU convention) */
-    /* Length set at 128 Megabytes  */
+    /* Origin starts at BOOT_ORIGIN (see memmap.ld) */
+    /* Length set at BOOT_LENGTH (see memmap.ld)  */
 }
 
 SECTIONS
@@ -72,9 +73,14 @@ SECTIONS
 
     /* Provide the _trap_stack_top symbol */
     /* The trap stack starts from highest address, that is equal to the RAM origin plus the size of the RAM itself */ 
+    /* trap stack is 4K in size */
     PROVIDE(_trap_stack_top = ORIGIN(RAM) + LENGTH(RAM));
 
     /* Provide the _stack_top symbol */
     /* The stack starts from highest address, that is equal to the trap stack top minus the size of the trap stack */
-    PROVIDE(_stack_top = _trap_stack_top - 8K);
+    PROVIDE(_stack_top = _trap_stack_top - 4K);
+    PROVIDE(_stack_bottom = _end);
+
+    /* Linking time assertion on MEMORY usage */
+    ASSERT(_stack_bottom < _stack_top, "no room left for stack: static sections + reserved stack exceed RAM region");
 }

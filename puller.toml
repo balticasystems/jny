@@ -1,8 +1,8 @@
 [dependencies]
 repos = [
-    ["Scala-Systems", "csr.h"],
-    ["Scala-Systems", "extensions.h"],
-    ["Scala-Systems", "qemu_dev.h"],
-    ["Scala-Systems", "Makefile"],
-    ["Scala-Systems", "linker.ld"],
+    ["scala-systems", "csr.h"],
+    ["scala-systems", "extensions.h"],
+    ["scala-systems", "qemu.h"],
+    ["scala-systems", "Makefile"],
+    ["scala-systems", "jny.ld"],
 ]
