@@ -1,0 +1,5 @@
+[setup]
+files = [
+    ["src/jny_core.c", "./src/"],
+    ["src/jny_init.s", "./src/"]
+]
