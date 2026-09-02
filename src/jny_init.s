@@ -1,8 +1,8 @@
 .section .text.init
-.global _start
+.global _bstart
 .global trap_handler
 
-_start:
+_bstart:
     csrr t0, mhartid        # get the mhartid
     bnez t0, park_hart      # if it is not 0 disable
     la sp, _stack_top       # initialize the stack stack

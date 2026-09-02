@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 #include "../include/csr.h"
-#include "../include/qemu_dev.h"
+#include "../include/qemu.h"
 #include "../include/extensions.h"
 
 // Data section addresses
