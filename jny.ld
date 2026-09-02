@@ -81,6 +81,6 @@ SECTIONS
     PROVIDE(_stack_top = _trap_stack_top - 4K);
     PROVIDE(_stack_bottom = _end);
 
-    /* Linking time assertion on ram usage */
+    /* Linking time assertion on MEMORY usage */
     ASSERT(_stack_bottom < _stack_top, "no room left for stack: static sections + reserved stack exceed RAM region")
 }
