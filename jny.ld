@@ -71,6 +71,9 @@ SECTIONS
     /* _end marks the first free address after everything statically linked */
     _end = .;
 
+    /* Provide kernel start */
+    PROVIDE(_kstart = KERNEL_ORIGIN);
+
     /* Provide the _trap_stack_top symbol */
     /* The trap stack starts from highest address, that is equal to the RAM origin plus the size of the RAM itself */ 
     /* trap stack is 4K in size */

@@ -7,6 +7,20 @@ _bstart:
     bnez t0, park_hart      # if it is not 0 disable
     la sp, _stack_top       # initialize the stack stack
     call jny_main           # jump into C part of the bootloader
+    # jumping in s-mode
+    csrr t0, mstatus        
+    li t1, ~(3 << 11)       # bitmask for 12/11 bits
+    and  t0, t0, t1         # clear MPP bits
+    li   t1, (1 << 11)      # s-mode = 01
+    or t0, t0, t1           # set mstatus.MPP at s-mode
+    csrw mstatus, t0        # set mstatus
+    la t0, _kstart          # load address of _kstart into t0
+    csrw mepc, t0           # set address to kernel in mepc
+    # setup a0 (hartid) and a1 (DTB or bootinfos)
+    csrr a0, mhartid
+    mv a1, zero 
+    # setup pmp
+    mret 
 
 park_hart:
     wfi                     # wait until the next interrupt
