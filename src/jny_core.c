@@ -19,11 +19,11 @@ extern uintptr_t trap_handler;
 
 void jny_panic(const char* msg, uint64_t mepc, uint64_t mcause, uint64_t code)
 {
-    uart_write_string("---- PANIC ----");
+    uart_write_string("---- PANIC ----\n");
     uart_write_string("bootloader panic: "); uart_write_string(msg); uart_write_string("\n");
     uart_write_string("mepc= "); uart_write_hex(mepc); uart_write_string("\t");
     uart_write_string("mcause= "); uart_write_hex(mcause); uart_write_string("\n");
-    uart_write_string("---------------");
+    uart_write_string("---------------\n");
 
     // Exit non-zero from qemu
     SIFIVE_TEST_FAIL(code); 
