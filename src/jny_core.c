@@ -102,10 +102,15 @@ void jny_pmp_setup()
     // CSRW(PMPADDR1, (uint64_t)&_boot_end);
     // cfg |= ((1 << 7) | (0b01) << 3 | 0b111) << 8;
 
+    // Allow UART0 for kernel usage
+    CSRW(PMPADDR2, (uint64_t)&_kernel_origin >> 2);
+    CSRW(PMPADDR3, (uint64_t)&_kernel_end >> 2);
+    cfg |= ((0b01) << 3 | 0b011) << 24;
+
     // Setup the s-mode memory for the kernel
     CSRW(PMPADDR2, (uint64_t)&_kernel_origin >> 2);
     CSRW(PMPADDR3, (uint64_t)&_kernel_end >> 2);
-    cfg |= ((0b01) << 3 | 0b111) << 24;
+    cfg |= ((0b01) << 3 | 0b111) << 40;
     
     // Write config
     CSRW(PMPCFG0, cfg);
