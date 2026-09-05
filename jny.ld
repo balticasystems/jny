@@ -71,18 +71,15 @@ SECTIONS
     /* _end marks the first free address after everything statically linked */
     _end = .;
 
-    /* Provide kernel start */
-    PROVIDE(_kstart = KERNEL_ORIGIN);
-
     /* Provide the _trap_stack_top symbol */
     /* The trap stack starts from highest address, that is equal to the RAM origin plus the size of the RAM itself */ 
     /* trap stack is 4K in size */
-    PROVIDE(_trap_stack_top = ORIGIN(RAM) + LENGTH(RAM));
+    _trap_stack_top = ORIGIN(RAM) + LENGTH(RAM);
 
     /* Provide the _stack_top symbol */
     /* The stack starts from highest address, that is equal to the trap stack top minus the size of the trap stack */
-    PROVIDE(_stack_top = _trap_stack_top - 4K);
-    PROVIDE(_stack_bottom = _end);
+    _stack_top = _trap_stack_top - 4K;
+    _stack_bottom = _end;
 
     /* Linking time assertion on MEMORY usage */
     ASSERT(_stack_bottom < _stack_top, "no room left for stack: static sections + reserved stack exceed RAM region")
