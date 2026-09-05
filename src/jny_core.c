@@ -128,6 +128,10 @@ void jny_handover()
     // Set mepc to restart exec at kernel origin
     CSRW(MEPC, (uint64_t)&_kernel_origin);
 
+    // Passing mhartid to kernel from firmware/bootloader
+    asm volatile ("csrr a0, mhartid ");
+
+    // Handover
     asm volatile ("mret");
 }
 
