@@ -22,8 +22,6 @@ extern uintptr_t _boot_end;
 extern uintptr_t _kernel_origin;
 extern uintptr_t _kernel_end;
 
-extern uintptr_t _kstart;
-
 void jny_panic(const char* msg, uint64_t mepc, uint64_t mcause, uint64_t code)
 {
     uart_write_string("---- PANIC ----\n");
@@ -123,7 +121,7 @@ void jny_handover()
     CSRW(MSTATUS, cfg);
 
     // Set mepc to restart exec at kernel origin
-    CSRW(MEPC, (uint64_t)&_kstart);
+    CSRW(MEPC, (uint64_t)&_kernel_origin);
 
     asm volatile ("mret");
 }
