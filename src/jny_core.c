@@ -17,6 +17,13 @@ extern uintptr_t _trap_stack_top;
 // Trap handler address
 extern uintptr_t trap_handler;
 
+extern uintptr_t _boot_origin;
+extern uintptr_t _boot_end;
+extern uintptr_t _kernel_origin;
+extern uintptr_t _kernel_end;
+
+extern uintptr_t _kstart;
+
 void jny_panic(const char* msg, uint64_t mepc, uint64_t mcause, uint64_t code)
 {
     uart_write_string("---- PANIC ----\n");
@@ -85,6 +92,40 @@ void jny_mtvec_init()
     uart_write_string("[jny_mtvec_init] mtvec="); uart_write_hex(check); uart_write_string("\n");
 #endif
 
+}
+
+void jny_pmp_setup()
+{
+    uint64_t cfg = 0;
+
+    // Lock the bootloader/firmware
+    // TODO: Unlock once development of kernel is fine
+    // CSRW(PMPADDR0, (uint64_t)&_boot_origin);
+    // CSRW(PMPADDR1, (uint64_t)&_boot_end);
+    // cfg |= ((1 << 7) | (0b01) << 3 | 0b111) << 8;
+
+    // Setup the s-mode memory for the kernel
+    CSRW(PMPADDR2, (uint64_t)&_kernel_origin);
+    CSRW(PMPADDR3, (uint64_t)&_kernel_end);
+    cfg |= ((0b01) << 3 | 0b111) << 24;
+    
+    // Write config
+    CSRW(PMPCFG0, cfg);
+}
+
+void jny_handover()
+{
+    // Set mstatus to s-mode
+    uint64_t cfg;
+    CSRR(cfg, MSTATUS);
+    cfg &= ~(0b11) << 11;   // clear MPP field
+    cfg |= (0b01) << 11;    // set MPP field
+    CSRW(MSTATUS, cfg);
+
+    // Set mepc to restart exec at kernel origin
+    CSRW(MEPC, (uint64_t)&_kstart);
+
+    asm volatile ("mret");
 }
 
 typedef struct {
