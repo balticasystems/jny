@@ -103,8 +103,8 @@ void jny_pmp_setup()
     // cfg |= ((1 << 7) | (0b01) << 3 | 0b111) << 8;
 
     // Setup the s-mode memory for the kernel
-    CSRW(PMPADDR2, (uint64_t)&_kernel_origin);
-    CSRW(PMPADDR3, (uint64_t)&_kernel_end);
+    CSRW(PMPADDR2, (uint64_t)&_kernel_origin >> 2);
+    CSRW(PMPADDR3, (uint64_t)&_kernel_end >> 2);
     cfg |= ((0b01) << 3 | 0b111) << 24;
     
     // Write config
