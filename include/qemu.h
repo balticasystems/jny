@@ -1,22 +1,24 @@
 #pragma once
 
 #include <stdint.h>
+#include <stddef.h>
 
 #include "extensions.h"
 
 // IO
 
-#define UART_BASE   (0x10000000UL)
-#define UART_SIZE   (0x100ULL)
+#define UART_BASE   ((uintptr_t)0x10000000)
+#define UART_SIZE   ((size_t)0x100)
+#define UART_END    ((uintptr_t)(UART_BASE + UART_SIZE))
 
-#define UART_THR    (*(volatile unsigned char *)(UART_BASE + 0x00))
-#define UART_LSR    (*(volatile unsigned char *)(UART_BASE + 0x05))
+#define UART_THR    (*(volatile uint8_t*)(UART_BASE + 0x00))
+#define UART_LSR    (*(volatile uint8_t*)(UART_BASE + 0x05))
 #define LSR_THRE    (1 << 5)
 
 force_inline void uart_write_char(char c)
 {
     while (!(UART_LSR & LSR_THRE)) { /* spin */ }
-    UART_THR = c;
+    UART_THR = (uint8_t)c;
 }
 
 force_inline void uart_write_string(const char* s)
@@ -46,15 +48,16 @@ force_inline void uart_write_hex(uint64_t val)
 // CTL
 
 // SiFive
-#define SIFIVE_TEST_BASE        (0x100000ULL)
-#define SIFIVE_TEST_SIZE        (0x1000ULL)
+#define SIFIVE_BASE             ((uintptr_t)0x100000)
+#define SIFIVE_SIZE             ((size_t)0x1000)
+#define SIFIVE_END              ((uintptr_t)(SIFIVE_BASE + SIFIVE_SIZE))
 
-#define SIFIVE_TEST             (*(volatile uint32_t*)0x100000)
+#define SIFIVE_TEST             (*(volatile uint32_t*)SIFIVE_BASE)
 
-#define SIFIVE_TEST_PASS_FLAG   (0x5555)
-#define SIFIVE_TEST_FAIL_FLAG   (0x3333)
-#define SIFIVE_TEST_RESET_FLAG  (0x7777)
+#define SIFIVE_TEST_PASS_FLAG   ((uint32_t)0x5555)
+#define SIFIVE_TEST_FAIL_FLAG   ((uint32_t)0x3333)
+#define SIFIVE_TEST_RESET_FLAG  ((uint32_t)0x7777)
 
 #define SIFIVE_TEST_PASS()      (SIFIVE_TEST = SIFIVE_TEST_PASS_FLAG)
-#define SIFIVE_TEST_FAIL(code)  (SIFIVE_TEST = (((code) << 16) | SIFIVE_TEST_FAIL_FLAG))
+#define SIFIVE_TEST_FAIL(code)  (SIFIVE_TEST = (((uint32_t)(code) << 16) | SIFIVE_TEST_FAIL_FLAG))
 #define SIFIVE_TEST_RESET()     (SIFIVE_TEST = SIFIVE_TEST_RESET_FLAG)

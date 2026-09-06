@@ -9,16 +9,21 @@
 // Data section addresses
 extern uintptr_t _data_start;
 extern uintptr_t _data_end;
+
 // BSS section addresses
 extern uintptr_t _bss_start;
 extern uintptr_t _bss_end;
+
 // Trap stack top address
 extern uintptr_t _trap_stack_top;
+
 // Trap handler address
 extern uintptr_t trap_handler;
 
+// Boot section
 extern uintptr_t _boot_origin;
 extern uintptr_t _boot_end;
+// Kernel section
 extern uintptr_t _kernel_origin;
 extern uintptr_t _kernel_end;
 
@@ -26,8 +31,8 @@ void jny_panic(const char* msg, uint64_t mepc, uint64_t mcause, uint64_t code)
 {
     uart_write_string("---- PANIC ----\n");
     uart_write_string("bootloader panic: "); uart_write_string(msg); uart_write_string("\n");
-    uart_write_string("mepc= "); uart_write_hex(mepc); uart_write_string("\t");
-    uart_write_string("mcause= "); uart_write_hex(mcause); uart_write_string("\n");
+    uart_write_string("mepc="); uart_write_hex(mepc); uart_write_string("\t");
+    uart_write_string("mcause="); uart_write_hex(mcause); uart_write_string("\n");
     uart_write_string("---------------\n");
 
     // Exit non-zero from qemu
@@ -67,10 +72,11 @@ void jny_data_init()
 
 void jny_mscratch_init()
 {
-    CSRW(MSCRATCH, &_trap_stack_top);
+    CSRW(MSCRATCH, (uintptr_t)&_trap_stack_top);
 
 #ifdef DEBUG
-    uint64_t check; CSRR(check, MSCRATCH);
+    uintptr_t check; 
+    CSRR(check, MSCRATCH);
     uart_write_string("[jny_mscratch_init] mscratch="); uart_write_hex(check); uart_write_string("\n");
 #endif
 
@@ -78,10 +84,11 @@ void jny_mscratch_init()
 
 void jny_mtvec_init()
 {
-    CSRW(MTVEC, &trap_handler);
+    CSRW(MTVEC, (uintptr_t)&trap_handler);
 
 #ifdef DEBUG
-    uint64_t check; CSRR(check, MTVEC);
+    uintptr_t check; 
+    CSRR(check, MTVEC);
     uart_write_string("[jny_mtvec_init] mtvec="); uart_write_hex(check); uart_write_string("\n");
 #endif
 
@@ -99,17 +106,17 @@ void jny_pmp_setup()
 
     // Allow UART0 for kernel usage
     CSRW(PMPADDR2, UART_BASE >> 2);
-    CSRW(PMPADDR3, (UART_BASE + UART_SIZE) >> 2);
+    CSRW(PMPADDR3, UART_END >> 2);
     cfg |= (((uint64_t)0b01) << 3 | ((uint64_t)0b011)) << 24;
 
     // Allow SiFive for kernel usage
-    CSRW(PMPADDR4, SIFIVE_TEST_BASE >> 2);
-    CSRW(PMPADDR5, (SIFIVE_TEST_BASE + SIFIVE_TEST_SIZE) >> 2);
+    CSRW(PMPADDR4, SIFIVE_BASE >> 2);
+    CSRW(PMPADDR5, SIFIVE_END >> 2);
     cfg |= (((uint64_t)0b01) << 3 | ((uint64_t)0b011)) << 40;
 
     // Setup the s-mode memory for the kernel
-    CSRW(PMPADDR6, (uint64_t)&_kernel_origin >> 2);
-    CSRW(PMPADDR7, (uint64_t)&_kernel_end >> 2);
+    CSRW(PMPADDR6, (uintptr_t)&_kernel_origin >> 2);
+    CSRW(PMPADDR7, (uintptr_t)&_kernel_end >> 2);
     cfg |= (((uint64_t)0b01) << 3 | ((uint64_t)0b111)) << 56;
     
     // Write config
@@ -121,12 +128,12 @@ void jny_handover()
     // Set mstatus to s-mode
     uint64_t cfg;
     CSRR(cfg, MSTATUS);
-    cfg &= ~((uint64_t)0b11) << 11;   // clear MPP field
+    cfg &= ~(((uint64_t)0b11) << 11);   // clear MPP field
     cfg |= ((uint64_t)0b01) << 11;    // set MPP field
     CSRW(MSTATUS, cfg);
 
     // Set mepc to restart exec at kernel origin
-    CSRW(MEPC, (uint64_t)&_kernel_origin);
+    CSRW(MEPC, (uintptr_t)&_kernel_origin);
 
     // Passing mhartid to kernel from firmware/bootloader
     asm volatile ("csrr a0, mhartid ");
@@ -170,8 +177,8 @@ typedef struct {
     uint64_t mepc;
 } frame_t;
 
-#define CAUSE_BIT   ((uint64_t)1 << 63)
-#define CAUSE_MASK  (((uint64_t)1 << 63)-1)
+#define CAUSE_BIT   ((uint64_t)0b1 << 63)
+#define CAUSE_MASK  (((uint64_t)0b1 << 63)-1)
 
 void jny_dispatcher(frame_t* frame)
 {
