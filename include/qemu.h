@@ -7,6 +7,8 @@
 // IO
 
 #define UART_BASE   (0x10000000UL)
+#define UART_SIZE   (0x100ULL)
+
 #define UART_THR    (*(volatile unsigned char *)(UART_BASE + 0x00))
 #define UART_LSR    (*(volatile unsigned char *)(UART_BASE + 0x05))
 #define LSR_THRE    (1 << 5)
@@ -44,6 +46,9 @@ force_inline void uart_write_hex(uint64_t val)
 // CTL
 
 // SiFive
+#define SIFIVE_TEST_BASE        (0x100000ULL)
+#define SIFIVE_TEST_SIZE        (0x1000ULL)
+
 #define SIFIVE_TEST             (*(volatile uint32_t*)0x100000)
 
 #define SIFIVE_TEST_PASS_FLAG   (0x5555)
