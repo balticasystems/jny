@@ -239,7 +239,7 @@ void jny_main()
     uart_write_string("[jny_main] dispatcher test passed\n");
 #endif
 
-#ifdef KENREL
+#ifdef KERNEL
     jny_pmp_setup();
 
     jny_handover();
