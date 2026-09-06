@@ -121,8 +121,8 @@ void jny_handover()
     // Set mstatus to s-mode
     uint64_t cfg;
     CSRR(cfg, MSTATUS);
-    cfg &= ~(0b11) << 11;   // clear MPP field
-    cfg |= (0b01) << 11;    // set MPP field
+    cfg &= ~(0b11ULL) << 11;   // clear MPP field
+    cfg |= (0b01ULL) << 11;    // set MPP field
     CSRW(MSTATUS, cfg);
 
     // Set mepc to restart exec at kernel origin
@@ -239,8 +239,12 @@ void jny_main()
     uart_write_string("[jny_main] dispatcher test passed\n");
 #endif
 
-    // Success
+#ifdef KENREL
+    jny_pmp_setup();
 
+    jny_handover();
+#else
     // TEST PASSED (EXIT)
     SIFIVE_TEST_PASS();
+#endif
 }
