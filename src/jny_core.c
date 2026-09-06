@@ -37,21 +37,16 @@ void jny_panic(const char* msg, uint64_t mepc, uint64_t mcause, uint64_t code)
 void jny_logo()
 {
     uart_write_string("\n");
-    uart_write_string(" __\n");
-    uart_write_string("/\\_\\    ___   __  __\n");
-    uart_write_string("\\/\\ \\ /' _ `\\/\\ \\/\\ \\\n");
-    uart_write_string(" \\ \\ \\/\\ \\/\\ \\ \\ \\_\\ \\\n");
-    uart_write_string(" _\\ \\ \\ \\_\\ \\_\\/`____ \\\n");
-    uart_write_string("/\\ \\_\\ \\/_/\\/_/`/___/> \\\n");
-    uart_write_string("\\ \\____/          /\\___/\n");
-    uart_write_string(" \\/___/           \\/__/\n");
-    uart_write_string("                __                      __    ___                        __\n");
-    uart_write_string("               /\\ \\                    /\\ \\__/\\_ \\                      /\\ \\\n");
-    uart_write_string("               \\ \\ \\____    ___     ___\\ \\ ,_\\//\\ \\     ___      __     \\_\\ \\     __   _ __\n");
-    uart_write_string("                \\ \\ '__`\\  / __`\\  / __`\\ \\ \\/ \\ \\ \\   / __`\\  /'__`\\   /'_` \\  /'__`\\/\\`'__\\\n");
-    uart_write_string("                 \\ \\ \\L\\ \\/\\ \\L\\ \\/\\ \\L\\ \\ \\ \\_ \\_\\ \\_/\\ \\L\\ \\/\\ \\L\\.\\_/\\ \\L\\ \\/\\  __/\\ \\ \\/\n");
-    uart_write_string("                  \\ \\_,__/\\ \\____/\\ \\____/\\ \\__\\/\\____\\ \\____/\\ \\__/.\\_\\ \\___,_\\ \\____\\\\ \\_\\\n");
-    uart_write_string("                   \\/___/  \\/___/  \\/___/  \\/__/\\/____/\\/___/  \\/__/\\/_/\\/__,_ /\\/____/ \\/_/\n");
+    uart_write_string("    o8o");
+    uart_write_string("    `\"'");
+    uart_write_string("   oooo ooo. .oo.   oooo    ooo");
+    uart_write_string("   `888 `888P\"Y88b   `88.  .8'");
+    uart_write_string("    888  888   888    `88..8'");
+    uart_write_string("    888  888   888     `888'");
+    uart_write_string("    888 o888o o888o     .8'");
+    uart_write_string("    888             .o..P'");
+    uart_write_string(".o. 88P             `Y8P'");
+    uart_write_string("`Y888P");
     uart_write_string("\n");
 }
 
