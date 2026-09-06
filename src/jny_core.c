@@ -100,17 +100,17 @@ void jny_pmp_setup()
     // Allow UART0 for kernel usage
     CSRW(PMPADDR2, UART_BASE >> 2);
     CSRW(PMPADDR3, (UART_BASE + UART_SIZE) >> 2);
-    cfg |= ((0b01ULL) << 3 | 0b011ULL) << 24;
+    cfg |= (((uint64_t)0b01) << 3 | ((uint64_t)0b011)) << 24;
 
     // Allow SiFive for kernel usage
     CSRW(PMPADDR4, SIFIVE_TEST_BASE >> 2);
     CSRW(PMPADDR5, (SIFIVE_TEST_BASE + SIFIVE_TEST_SIZE) >> 2);
-    cfg |= ((0b01ULL) << 3 | 0b011ULL) << 40;
+    cfg |= (((uint64_t)0b01) << 3 | ((uint64_t)0b011)) << 40;
 
     // Setup the s-mode memory for the kernel
     CSRW(PMPADDR6, (uint64_t)&_kernel_origin >> 2);
     CSRW(PMPADDR7, (uint64_t)&_kernel_end >> 2);
-    cfg |= ((0b01ULL) << 3 | 0b111ULL) << 56;
+    cfg |= (((uint64_t)0b01) << 3 | ((uint64_t)0b111)) << 56;
     
     // Write config
     CSRW(PMPCFG0, cfg);
@@ -121,8 +121,8 @@ void jny_handover()
     // Set mstatus to s-mode
     uint64_t cfg;
     CSRR(cfg, MSTATUS);
-    cfg &= ~(0b11ULL) << 11;   // clear MPP field
-    cfg |= (0b01ULL) << 11;    // set MPP field
+    cfg &= ~((uint64_t)0b11) << 11;   // clear MPP field
+    cfg |= ((uint64_t)0b01) << 11;    // set MPP field
     CSRW(MSTATUS, cfg);
 
     // Set mepc to restart exec at kernel origin
@@ -170,8 +170,8 @@ typedef struct {
     uint64_t mepc;
 } frame_t;
 
-#define CAUSE_BIT   (1ULL << 63)
-#define CAUSE_MASK  ((1ULL << 63)-1)
+#define CAUSE_BIT   ((uint64_t)1 << 63)
+#define CAUSE_MASK  (((uint64_t)1 << 63)-1)
 
 void jny_dispatcher(frame_t* frame)
 {
